@@ -276,6 +276,9 @@
         clearForm()
         const loading = document.getElementById("loading");
 
+        let results = document.getElementById("results");
+        results.style.display = "block";
+
         const crabid1 = document.getElementById("crabid1").value;
         const crabid2 = document.getElementById("crabid2").value;
 
@@ -303,9 +306,6 @@
                 }
 
                 loading.innerHTML = "";
-
-                let results = document.getElementById("results");
-                results.style.display = "block";
 
                 let resuls_text = document.getElementById("resuls_text");
                 resuls_text.innerHTML = ''
