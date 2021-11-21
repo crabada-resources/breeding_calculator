@@ -78,6 +78,40 @@
         background-color: #04AA6D;
         color: white;
     }
+
+    .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .tab button {
+        background-color: inherit;
+        float: center;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+        font-size: 17px;
+    }
+
+    .tab button:hover {
+        background-color: #ddd;
+    }
+
+    .tab button.active {
+        background-color: #ccc;
+    }
+
+    .tabcontent {
+        display: none;
+        padding: 20px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+    }
 </style>
 
 <body onload="checkSettings();">
@@ -91,12 +125,35 @@
     <div id="header">
         <h2>Breeding Calculator</h2>
         <br></br>
-        <form id="crabs_settings" onsubmit="return false">
-            Crab Id 1: &nbsp;&nbsp;<input type="number" id="crabid1" step="1" style="width: 10em" /><br>
-            Crab Id 2: &nbsp;&nbsp;<input type="number" id="crabid2" step="1" style="width: 10em" /><br><br>
 
-            <button id="calculateBtn" class="button" onclick="calculate()">Calculate!</button>
-        </form>
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'two_breed')" id="tab_1">Breed two crabs</button>
+            <button class="tablinks" onclick="openTab(event, 'egg_breed')" id="tab_2">How good is the egg?</button>
+            <button class="tablinks" onclick="openTab(event, 'single_breed')" id="tab_3">Find the best match</button>
+        </div>
+        <div id="two_breed" class="tabcontent">
+            <form id="crabs_settings" onsubmit="return false">
+                Crab Id 1: &nbsp;&nbsp;<input type="number" id="crabid1" step="1" style="width: 10em" /><br>
+                Crab Id 2: &nbsp;&nbsp;<input type="number" id="crabid2" step="1" style="width: 10em" /><br><br>
+
+                <button id="calculateBtn" class="button" onclick="calculate_two()">Calculate!</button>
+            </form>
+        </div>
+        <div id="egg_breed" class="tabcontent">
+            <form id="eggs_settings" onsubmit="return false">
+                Egg Id: &nbsp;&nbsp;<input type="number" id="eggid" step="1" style="width: 10em" /><br><br>
+
+                <button id="calculateBtn" class="button" onclick="calculate_egg()">Calculate!</button>
+            </form>
+        </div>
+        <div id="single_breed" class="tabcontent">
+            <form id="single_settings" onsubmit="return false">
+                Crab Id: &nbsp;&nbsp;<input type="number" id="singleid" step="1" style="width: 10em" /><br>
+                Max price: &nbsp;&nbsp;<input type="number" id="maxprice" step="1" style="width: 10em" /><br><br>
+
+                <button id="calculateBtn" class="button" onclick="calculate_single()">Calculate!</button>
+            </form>
+        </div>
 
         <div id="results" style="display: none">
             <h3> Results </h3>
@@ -104,9 +161,26 @@
             <div id="resuls_text"></div>
             <br>
         </div>
-
+    </div>
 </body>
 <script type="text/javascript">
+    function openTab(evt, cityName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(cityName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    document.getElementById("tab_1").click();
+
+
     function GetURLParameter(sParam) {
         const sPageURL = window.location.search.substring(1);
         const sURLVariables = sPageURL.split('&');
@@ -128,8 +202,32 @@
         if (parametercrabid1 != null && parametercrabid2 != null) {
             crabid1.setAttribute("value", parametercrabid1);
             crabid2.setAttribute("value", parametercrabid2);
-            calculate()
+            calculate_egg()
+            return
         }
+
+        let eggid = document.getElementById("eggid");
+        let parametereggid = GetURLParameter('eggid');
+        if (parametereggid != null) {
+            document.getElementById("tab_2").click();
+            crabid1.setAttribute("value", parametereggid);
+            calculate_two()
+            return
+        }
+
+        let singleid = document.getElementById("singleid");
+        let maxprice = document.getElementById("maxprice");
+        let parametersingleid = GetURLParameter('singleid');
+        let parametermaxprice = GetURLParameter('maxprice');
+
+        if (parametersingleid != null && parametermaxprice != null) {
+            document.getElementById("tab_3").click();
+            singleid.setAttribute("value", parametersingleid);
+            maxprice.setAttribute("value", parametermaxprice);
+            calculate_single()
+            return
+        }
+
     }
 
     const dec2hex = str => { // .toString(16) only works up to 2^53
@@ -255,26 +353,25 @@
         probability_5_6 = shellr0 * hornr0 * bodyr0 * mouthr0 * eyer0 * (1 - pincerr0) + shellr0 * hornr0 * bodyr0 * mouthr0 * (1 - eyer0) * pincerr0 + shellr0 * hornr0 * bodyr0 * (1 - mouthr0) * eyer0 * pincerr0 + shellr0 * hornr0 * (1 - bodyr0) * mouthr0 * eyer0 * pincerr0 + shellr0 * (1 - hornr0) * bodyr0 * mouthr0 * eyer0 * pincerr0 + (1 - shellr0) * hornr0 * bodyr0 * mouthr0 * eyer0 * pincerr0 + probability_6_6
 
         probability_4_6 = shellr0 * hornr0 * bodyr0 * mouthr0 * (1 - eyer0) * (1 - pincerr0) + shellr0 * hornr0 * bodyr0 * (1 - mouthr0) * eyer0 * (1 - pincerr0) + shellr0 * hornr0 * (1 - bodyr0) * mouthr0 * eyer0 * (1 - pincerr0) + shellr0 * (1 - hornr0) * bodyr0 * mouthr0 * eyer0 * (1 - pincerr0) + (1 - shellr0) * hornr0 * bodyr0 * mouthr0 * eyer0 * (1 - pincerr0) + shellr0 * hornr0 * bodyr0 * (1 - mouthr0) * (1 - eyer0) * pincerr0 + shellr0 * hornr0 * (1 - bodyr0) * mouthr0 * (1 - eyer0) * pincerr0 + shellr0 * (1 - hornr0) * bodyr0 * mouthr0 * (1 - eyer0) * pincerr0 + (1 - shellr0) * hornr0 * bodyr0 * mouthr0 * (1 - eyer0) * pincerr0 + shellr0 * hornr0 * (1 - bodyr0) * (1 - mouthr0) * eyer0 * pincerr0 + shellr0 * (1 - hornr0) * bodyr0 * (1 - mouthr0) * eyer0 * pincerr0 + (1 - shellr0) * hornr0 * bodyr0 * (1 - mouthr0) * eyer0 * pincerr0 + shellr0 * (1 - hornr0) * (1 - bodyr0) * mouthr0 * eyer0 * pincerr0 + (1 - shellr0) * hornr0 * (1 - bodyr0) * mouthr0 * eyer0 * pincerr0 + (1 - shellr0) * (1 - hornr0) * bodyr0 * mouthr0 * eyer0 * pincerr0 + probability_5_6
-        
-        probability_6_6 = 100*probability_6_6
-        probability_5_6 = 100*probability_5_6
-        probability_4_6 = 100*probability_4_6
+
+        probability_6_6 = 100 * probability_6_6
+        probability_5_6 = 100 * probability_5_6
+        probability_4_6 = 100 * probability_4_6
 
 
-        shellr0 = 100*shellr0
-        hornr0 = 100*hornr0
-        bodyr0 = 100*bodyr0
-        mouthr0 = 100*mouthr0
-        eyer0 = 100*eyer0
-        pincerr0 = 100*pincerr0
+        shellr0 = 100 * shellr0
+        hornr0 = 100 * hornr0
+        bodyr0 = 100 * bodyr0
+        mouthr0 = 100 * mouthr0
+        eyer0 = 100 * eyer0
+        pincerr0 = 100 * pincerr0
 
 
-        return {probability_4_6, probability_5_6, probability_6_6, shellr0, hornr0, bodyr0, mouthr0, eyer0, pincerr0}
+        return { probability_4_6, probability_5_6, probability_6_6, shellr0, hornr0, bodyr0, mouthr0, eyer0, pincerr0 }
     }
 
-    function calculate() {
+    function calculate_two() {
         clearForm()
-        const loading = document.getElementById("loading");
 
         let results = document.getElementById("results");
         results.style.display = "block";
@@ -304,71 +401,202 @@
                 } else {
                     prob1 = calcProbability(crab1.dna, crab2.dna, crab1.class_name)
                 }
+                const loading = document.getElementById("loading");
+                loading.innerHTML = "";
 
+                let resuls_text = document.getElementById("resuls_text");
+                resuls_text.innerHTML = ''
+                buildResults(crab1, crab2, dnainfo1, dnainfo2, prob1, prob2)
+
+            }).catch(function (error) {
+                console.log(error);
+            });
+    }
+
+    function calculate_egg() {
+        clearForm()
+
+        let results = document.getElementById("results");
+        results.style.display = "block";
+
+        const eggid = document.getElementById("eggid").value;
+
+        fetch(`https://api.crabada.com/public/crabada/family/${eggid}`).then(response => response.json())
+            .then(function (response) {
+                const crab1 = response["result"]["crabada_parents"][0];
+                const crab2 = response["result"]["crabada_parents"][1];
+
+                const dnainfo1 = calcInfo(crab1.dna)
+                const dnainfo2 = calcInfo(crab2.dna)
+
+                let prob1
+                let prob2
+
+                if (crab1.class_name != crab2.class_name) {
+                    prob1 = calcProbability(crab1.dna, crab2.dna, crab1.class_name)
+                    prob2 = calcProbability(crab1.dna, crab2.dna, crab2.class_name)
+                } else {
+                    prob1 = calcProbability(crab1.dna, crab2.dna, crab1.class_name)
+                }
+                const loading = document.getElementById("loading");
+                loading.innerHTML = "";
+
+                let resuls_text = document.getElementById("resuls_text");
+                resuls_text.innerHTML = ''
+                buildResults(crab1, crab2, dnainfo1, dnainfo2, prob1, prob2)
+
+            }).catch(function (error) {
+                console.log(error);
+            });
+    }
+
+    function calculate_single() {
+        clearForm()
+
+        let results = document.getElementById("results");
+        results.style.display = "block";
+
+        const singleid = document.getElementById("singleid").value;
+        const maxprice = document.getElementById("maxprice").value;
+
+        const requests = []
+        requests.push(fetch(`https://api.crabada.com/public/crabada/info/${singleid}`).then(response => response.json()))
+        requests.push(fetch(`https://api.crabada.com/public/crabada/selling?limit=1000&stage=1&orderBy=price&order=asc`).then(response => response.json()))
+
+        Promise.all(requests)
+            .then(function (responses) {
+                const crab1 = responses[0]["result"];
+                const dnainfo1 = calcInfo(crab1.dna)
+
+                let bestprob6_6 = 0
+                let prob6
+                let bestprob5_6 = 0
+                let prob5
+                let bestprob4_6 = 0
+                let prob4
+
+                responses[1]["result"]["data"].forEach(c => {
+                    let price = Math.round(c.price / 1.0e18)
+                    if (c.breed_count == 5 || c.class_name != crab1.class_name || c.crabada_id == crab1.crabada_id || price > maxprice) {
+                        return
+                    }
+                    let prob1 = calcProbability(crab1.dna, c.dna, crab1.class_name)
+                    if (prob1.probability_6_6 > bestprob6_6) {
+                        bestprob6_6 = prob1.probability_6_6
+                        prob6 = { c, prob1 }
+                    }
+                    if (prob1.probability_5_6 > bestprob5_6) {
+                        bestprob5_6 = prob1.probability_5_6
+                        prob5 = { c, prob1 }
+                    }
+                    if (prob1.probability_4_6 > bestprob4_6) {
+                        bestprob4_6 = prob1.probability_4_6
+                        prob4 = { c, prob1 }
+                    }
+
+                })
+                const loading = document.getElementById("loading");
                 loading.innerHTML = "";
 
                 let resuls_text = document.getElementById("resuls_text");
                 resuls_text.innerHTML = ''
 
-                resuls_text.innerHTML += `<h4>DNA for Crab 1 (${crab1.crabada_id} - ${crab1.class_name}):</h4>`
-                let table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
-                table += `<tr><td>Dominant class</td><td bgcolor="${mapColor(dnainfo1.shellr0)}">${dnainfo1.shellr0}</td><td bgcolor="${mapColor(dnainfo1.hornr0)}">${dnainfo1.hornr0}</td><td bgcolor="${mapColor(dnainfo1.bodyr0)}">${dnainfo1.bodyr0}</td><td bgcolor="${mapColor(dnainfo1.mouthr0)}">${dnainfo1.mouthr0}</td><td bgcolor="${mapColor(dnainfo1.eyer0)}">${dnainfo1.eyer0}</td><td bgcolor="${mapColor(dnainfo1.pincerr0)}">${dnainfo1.pincerr0}</td></tr>`
-                table += `<tr><td>Recessive 1 class</td><td bgcolor="${mapColor(dnainfo1.shellr1)}">${dnainfo1.shellr1}</td><td bgcolor="${mapColor(dnainfo1.hornr1)}">${dnainfo1.hornr1}</td><td bgcolor="${mapColor(dnainfo1.bodyr1)}">${dnainfo1.bodyr1}</td><td bgcolor="${mapColor(dnainfo1.mouthr1)}">${dnainfo1.mouthr1}</td><td bgcolor="${mapColor(dnainfo1.eyer1)}">${dnainfo1.eyer1}</td><td bgcolor="${mapColor(dnainfo1.pincerr1)}">${dnainfo1.pincerr1}</td></tr>`
-                table += `<tr><td>Recessive 2 class</td><td bgcolor="${mapColor(dnainfo1.shellr2)}">${dnainfo1.shellr2}</td><td bgcolor="${mapColor(dnainfo1.hornr2)}">${dnainfo1.hornr2}</td><td bgcolor="${mapColor(dnainfo1.bodyr2)}">${dnainfo1.bodyr2}</td><td bgcolor="${mapColor(dnainfo1.mouthr2)}">${dnainfo1.mouthr2}</td><td bgcolor="${mapColor(dnainfo1.eyer2)}">${dnainfo1.eyer2}</td><td bgcolor="${mapColor(dnainfo1.pincerr2)}">${dnainfo1.pincerr2}</td></tr>`
-                table += "</tbody></table></br>"
-                resuls_text.innerHTML += table
+                const matchTable = (element, crab) => {
+                    crab.url = `<a href="https://marketplace.crabada.com/crabada/${crab.crabada_id}" target="_blank" rel="noopener noreferrer">${crab.crabada_id}</a>`
+                    crab.combat = crab.hp + crab.damage + crab.armor
+                    crab.mine = crab.speed + crab.critical
+                    crab.price = Math.round(crab.price / 1.0e18)
+                    crab.origin = crab.is_origin == 1 ? 'Yes' : 'No'
+                    crab.pure_parts = +(crab.class_id == crab.horn_class) + +(crab.class_id == crab.shell_class) + +(crab.class_id == crab.body_class) + +(crab.class_id == crab.mouth_class) + +(crab.class_id == crab.eyes_class) + +(crab.class_id == crab.pincers_class)
 
-
-                resuls_text.innerHTML += `<h4>DNA for Crab 2 (${crab2.crabada_id} - ${crab2.class_name}):</h4>`
-                table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
-                table += `<tr><td>Dominant class</td><td bgcolor="${mapColor(dnainfo2.shellr0)}">${dnainfo2.shellr0}</td><td bgcolor="${mapColor(dnainfo2.hornr0)}">${dnainfo2.hornr0}</td><td bgcolor="${mapColor(dnainfo2.bodyr0)}">${dnainfo2.bodyr0}</td><td bgcolor="${mapColor(dnainfo2.mouthr0)}">${dnainfo2.mouthr0}</td><td bgcolor="${mapColor(dnainfo2.eyer0)}">${dnainfo2.eyer0}</td><td bgcolor="${mapColor(dnainfo2.pincerr0)}">${dnainfo2.pincerr0}</td></tr>`
-                table += `<tr><td>Recessive 1 class</td><td bgcolor="${mapColor(dnainfo2.shellr1)}">${dnainfo2.shellr1}</td><td bgcolor="${mapColor(dnainfo2.hornr1)}">${dnainfo2.hornr1}</td><td bgcolor="${mapColor(dnainfo2.bodyr1)}">${dnainfo2.bodyr1}</td><td bgcolor="${mapColor(dnainfo2.mouthr1)}">${dnainfo2.mouthr1}</td><td bgcolor="${mapColor(dnainfo2.eyer1)}">${dnainfo2.eyer1}</td><td bgcolor="${mapColor(dnainfo2.pincerr1)}">${dnainfo2.pincerr1}</td></tr>`
-                table += `<tr><td>Recessive 2 class</td><td bgcolor="${mapColor(dnainfo2.shellr2)}">${dnainfo2.shellr2}</td><td bgcolor="${mapColor(dnainfo2.hornr2)}">${dnainfo2.hornr2}</td><td bgcolor="${mapColor(dnainfo2.bodyr2)}">${dnainfo2.bodyr2}</td><td bgcolor="${mapColor(dnainfo2.mouthr2)}">${dnainfo2.mouthr2}</td><td bgcolor="${mapColor(dnainfo2.eyer2)}">${dnainfo2.eyer2}</td><td bgcolor="${mapColor(dnainfo2.pincerr2)}">${dnainfo2.pincerr2}</td></tr>`
-                table += "</tbody></table></br>"
-                resuls_text.innerHTML += table
-
-
-                if (crab1.class_name != crab2.class_name) {
-                    resuls_text.innerHTML += `<h4>Probabilities if resulting class is ${crab1.class_name}:</h4>`
-                    table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
-                    table += `<tr><td>Dominant</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
-                    table += `<tr><td>Recessive 1</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
-                    table += `<tr><td>Recessive 2</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
-                    table += "</tbody></table>"
-                    resuls_text.innerHTML += table
-                    resuls_text.innerHTML +=`<h5>Probability of 4/6 or higher: ${prob1.probability_4_6.toFixed(2)}%</h5>`
-                    resuls_text.innerHTML +=`<h5>Probability of 5/6 or higher: ${prob1.probability_5_6.toFixed(2)}%</h5>`
-                    resuls_text.innerHTML +=`<h5>Probability of 6/6: ${prob1.probability_6_6.toFixed(2)}%</h5></br>`
-
-                    resuls_text.innerHTML += `<h4>Probabilities if resulting class is ${crab2.class_name}:</h4>`
-                    table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
-                    table += `<tr><td>Dominant</td><td>${prob2.shellr0.toFixed(2)}%</td><td>${prob2.hornr0.toFixed(2)}%</td><td>${prob2.bodyr0.toFixed(2)}%</td><td>${prob2.mouthr0.toFixed(2)}%</td><td>${prob2.eyer0.toFixed(2)}%</td><td>${prob2.pincerr0.toFixed(2)}%</td></tr>`
-                    table += `<tr><td>Recessive 1</td><td>${prob2.shellr0.toFixed(2)}%</td><td>${prob2.hornr0.toFixed(2)}%</td><td>${prob2.bodyr0.toFixed(2)}%</td><td>${prob2.mouthr0.toFixed(2)}%</td><td>${prob2.eyer0.toFixed(2)}%</td><td>${prob2.pincerr0.toFixed(2)}%</td></tr>`
-                    table += `<tr><td>Recessive 2</td><td>${prob2.shellr0.toFixed(2)}%</td><td>${prob2.hornr0.toFixed(2)}%</td><td>${prob2.bodyr0.toFixed(2)}%</td><td>${prob2.mouthr0.toFixed(2)}%</td><td>${prob2.eyer0.toFixed(2)}%</td><td>${prob2.pincerr0.toFixed(2)}%</td></tr>`
-                    table += "</tbody></table>"
-                    resuls_text.innerHTML += table
-                    resuls_text.innerHTML +=`<h5>Probability of 4/6 or higher: ${prob2.probability_4_6.toFixed(2)}%</h5>`
-                    resuls_text.innerHTML +=`<h5>Probability of 5/6 or higher: ${prob2.probability_5_6.toFixed(2)}%</h5>`
-                    resuls_text.innerHTML +=`<h5>Probability of 6/6: ${prob2.probability_6_6.toFixed(2)}%</h5></br>`
-                } else {
-                    resuls_text.innerHTML += `<h4>Probabilities if resulting class is ${crab1.class_name}:</h4>`
-                    table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
-                    table += `<tr><td>Dominant</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
-                    table += `<tr><td>Recessive 1</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
-                    table += `<tr><td>Recessive 2</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
-                    table += "</tbody></table>"
-                    resuls_text.innerHTML += table
-                    resuls_text.innerHTML +=`<h5>Probability of 4/6 or higher: ${prob1.probability_4_6.toFixed(2)}%</h5>`
-                    resuls_text.innerHTML +=`<h5>Probability of 5/6 or higher: ${prob1.probability_5_6.toFixed(2)}%</h5>`
-                    resuls_text.innerHTML +=`<h5>Probability of 6/6: ${prob1.probability_6_6.toFixed(2)}%</h5></br>`
+                    element.innerHTML += "<h4>Match found:</h4>"
+                    let table = ''
+                    table += `<table><thead><tr><th>Price (TUS)</th><th>Class</th><th>BP</th><th>MP</th><th>Breed count</th><th>Is origin?</th><th>Pure parts</th><th>Crab ID</th></tr></thead><tbody>`
+                    table += `<tr><td>${crab.price}</td><td>${crab.class_name}</td><td>${crab.combat}</td><td>${crab.mine}</td><td>${crab.breed_count}</td><td>${crab.origin}</td><td>${crab.pure_parts}</td><td>${crab.url}</td></tr>`
+                    table += "</tbody></table></br>"
+                    element.innerHTML += table
                 }
 
+                if (bestprob6_6 != 0) {
+                    const dnainfo2 = calcInfo(prob6.c.dna)
+                    matchTable(resuls_text, prob6.c)
+                    buildResults(crab1, prob6.c, dnainfo1, dnainfo2, prob6.prob1, 0)
+                    return
+                }
+                if (bestprob5_6 != 0) {
+                    const dnainfo2 = calcInfo(prob5.c.dna)
+                    matchTable(resuls_text, prob5.c)
+                    buildResults(crab1, prob5.c, dnainfo1, dnainfo2, prob5.prob1, 0)
+                    return
+                }
+                if (bestprob4_6 != 0) {
+                    const dnainfo2 = calcInfo(prob4.c.dna)
+                    matchTable(resuls_text, prob4.c)
+                    buildResults(crab1, prob4.c, dnainfo1, dnainfo2, prob4.prob1, 0)
+                    return
+                }
 
+                resuls_text.innerHTML += `<h4>No result found that would result in 4/6 or better</h4>`
 
 
             }).catch(function (error) {
                 console.log(error);
             });
+    }
+
+    function buildResults(crab1, crab2, dnainfo1, dnainfo2, prob1, prob2) {
+        resuls_text.innerHTML += `<h4>DNA for Crab 1 (${crab1.crabada_id} - ${crab1.class_name}):</h4>`
+        let table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
+        table += `<tr><td>Dominant class</td><td bgcolor="${mapColor(dnainfo1.shellr0)}">${dnainfo1.shellr0}</td><td bgcolor="${mapColor(dnainfo1.hornr0)}">${dnainfo1.hornr0}</td><td bgcolor="${mapColor(dnainfo1.bodyr0)}">${dnainfo1.bodyr0}</td><td bgcolor="${mapColor(dnainfo1.mouthr0)}">${dnainfo1.mouthr0}</td><td bgcolor="${mapColor(dnainfo1.eyer0)}">${dnainfo1.eyer0}</td><td bgcolor="${mapColor(dnainfo1.pincerr0)}">${dnainfo1.pincerr0}</td></tr>`
+        table += `<tr><td>Recessive 1 class</td><td bgcolor="${mapColor(dnainfo1.shellr1)}">${dnainfo1.shellr1}</td><td bgcolor="${mapColor(dnainfo1.hornr1)}">${dnainfo1.hornr1}</td><td bgcolor="${mapColor(dnainfo1.bodyr1)}">${dnainfo1.bodyr1}</td><td bgcolor="${mapColor(dnainfo1.mouthr1)}">${dnainfo1.mouthr1}</td><td bgcolor="${mapColor(dnainfo1.eyer1)}">${dnainfo1.eyer1}</td><td bgcolor="${mapColor(dnainfo1.pincerr1)}">${dnainfo1.pincerr1}</td></tr>`
+        table += `<tr><td>Recessive 2 class</td><td bgcolor="${mapColor(dnainfo1.shellr2)}">${dnainfo1.shellr2}</td><td bgcolor="${mapColor(dnainfo1.hornr2)}">${dnainfo1.hornr2}</td><td bgcolor="${mapColor(dnainfo1.bodyr2)}">${dnainfo1.bodyr2}</td><td bgcolor="${mapColor(dnainfo1.mouthr2)}">${dnainfo1.mouthr2}</td><td bgcolor="${mapColor(dnainfo1.eyer2)}">${dnainfo1.eyer2}</td><td bgcolor="${mapColor(dnainfo1.pincerr2)}">${dnainfo1.pincerr2}</td></tr>`
+        table += "</tbody></table></br>"
+        resuls_text.innerHTML += table
+
+
+        resuls_text.innerHTML += `<h4>DNA for Crab 2 (${crab2.crabada_id} - ${crab2.class_name}):</h4>`
+        table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
+        table += `<tr><td>Dominant class</td><td bgcolor="${mapColor(dnainfo2.shellr0)}">${dnainfo2.shellr0}</td><td bgcolor="${mapColor(dnainfo2.hornr0)}">${dnainfo2.hornr0}</td><td bgcolor="${mapColor(dnainfo2.bodyr0)}">${dnainfo2.bodyr0}</td><td bgcolor="${mapColor(dnainfo2.mouthr0)}">${dnainfo2.mouthr0}</td><td bgcolor="${mapColor(dnainfo2.eyer0)}">${dnainfo2.eyer0}</td><td bgcolor="${mapColor(dnainfo2.pincerr0)}">${dnainfo2.pincerr0}</td></tr>`
+        table += `<tr><td>Recessive 1 class</td><td bgcolor="${mapColor(dnainfo2.shellr1)}">${dnainfo2.shellr1}</td><td bgcolor="${mapColor(dnainfo2.hornr1)}">${dnainfo2.hornr1}</td><td bgcolor="${mapColor(dnainfo2.bodyr1)}">${dnainfo2.bodyr1}</td><td bgcolor="${mapColor(dnainfo2.mouthr1)}">${dnainfo2.mouthr1}</td><td bgcolor="${mapColor(dnainfo2.eyer1)}">${dnainfo2.eyer1}</td><td bgcolor="${mapColor(dnainfo2.pincerr1)}">${dnainfo2.pincerr1}</td></tr>`
+        table += `<tr><td>Recessive 2 class</td><td bgcolor="${mapColor(dnainfo2.shellr2)}">${dnainfo2.shellr2}</td><td bgcolor="${mapColor(dnainfo2.hornr2)}">${dnainfo2.hornr2}</td><td bgcolor="${mapColor(dnainfo2.bodyr2)}">${dnainfo2.bodyr2}</td><td bgcolor="${mapColor(dnainfo2.mouthr2)}">${dnainfo2.mouthr2}</td><td bgcolor="${mapColor(dnainfo2.eyer2)}">${dnainfo2.eyer2}</td><td bgcolor="${mapColor(dnainfo2.pincerr2)}">${dnainfo2.pincerr2}</td></tr>`
+        table += "</tbody></table></br>"
+        resuls_text.innerHTML += table
+
+
+        if (crab1.class_name != crab2.class_name) {
+            resuls_text.innerHTML += `<h4>Probabilities if resulting class is ${crab1.class_name}:</h4>`
+            table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
+            table += `<tr><td>Dominant</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
+            table += `<tr><td>Recessive 1</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
+            table += `<tr><td>Recessive 2</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
+            table += "</tbody></table>"
+            resuls_text.innerHTML += table
+            resuls_text.innerHTML += `<h5>Probability of 4/6 or higher: ${prob1.probability_4_6.toFixed(2)}%</h5>`
+            resuls_text.innerHTML += `<h5>Probability of 5/6 or higher: ${prob1.probability_5_6.toFixed(2)}%</h5>`
+            resuls_text.innerHTML += `<h5>Probability of 6/6: ${prob1.probability_6_6.toFixed(2)}%</h5></br>`
+
+            resuls_text.innerHTML += `<h4>Probabilities if resulting class is ${crab2.class_name}:</h4>`
+            table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
+            table += `<tr><td>Dominant</td><td>${prob2.shellr0.toFixed(2)}%</td><td>${prob2.hornr0.toFixed(2)}%</td><td>${prob2.bodyr0.toFixed(2)}%</td><td>${prob2.mouthr0.toFixed(2)}%</td><td>${prob2.eyer0.toFixed(2)}%</td><td>${prob2.pincerr0.toFixed(2)}%</td></tr>`
+            table += `<tr><td>Recessive 1</td><td>${prob2.shellr0.toFixed(2)}%</td><td>${prob2.hornr0.toFixed(2)}%</td><td>${prob2.bodyr0.toFixed(2)}%</td><td>${prob2.mouthr0.toFixed(2)}%</td><td>${prob2.eyer0.toFixed(2)}%</td><td>${prob2.pincerr0.toFixed(2)}%</td></tr>`
+            table += `<tr><td>Recessive 2</td><td>${prob2.shellr0.toFixed(2)}%</td><td>${prob2.hornr0.toFixed(2)}%</td><td>${prob2.bodyr0.toFixed(2)}%</td><td>${prob2.mouthr0.toFixed(2)}%</td><td>${prob2.eyer0.toFixed(2)}%</td><td>${prob2.pincerr0.toFixed(2)}%</td></tr>`
+            table += "</tbody></table>"
+            resuls_text.innerHTML += table
+            resuls_text.innerHTML += `<h5>Probability of 4/6 or higher: ${prob2.probability_4_6.toFixed(2)}%</h5>`
+            resuls_text.innerHTML += `<h5>Probability of 5/6 or higher: ${prob2.probability_5_6.toFixed(2)}%</h5>`
+            resuls_text.innerHTML += `<h5>Probability of 6/6: ${prob2.probability_6_6.toFixed(2)}%</h5></br>`
+        } else {
+            resuls_text.innerHTML += `<h4>Probabilities if resulting class is ${crab1.class_name}:</h4>`
+            table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
+            table += `<tr><td>Dominant</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
+            table += `<tr><td>Recessive 1</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
+            table += `<tr><td>Recessive 2</td><td>${prob1.shellr0.toFixed(2)}%</td><td>${prob1.hornr0.toFixed(2)}%</td><td>${prob1.bodyr0.toFixed(2)}%</td><td>${prob1.mouthr0.toFixed(2)}%</td><td>${prob1.eyer0.toFixed(2)}%</td><td>${prob1.pincerr0.toFixed(2)}%</td></tr>`
+            table += "</tbody></table>"
+            resuls_text.innerHTML += table
+            resuls_text.innerHTML += `<h5>Probability of 4/6 or higher: ${prob1.probability_4_6.toFixed(2)}%</h5>`
+            resuls_text.innerHTML += `<h5>Probability of 5/6 or higher: ${prob1.probability_5_6.toFixed(2)}%</h5>`
+            resuls_text.innerHTML += `<h5>Probability of 6/6: ${prob1.probability_6_6.toFixed(2)}%</h5></br>`
+        }
     }
 
     function clearForm() {
