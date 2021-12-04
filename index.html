@@ -129,6 +129,7 @@
             <button class="tablinks" onclick="openTab(event, 'two_breed')" id="tab_1">Breed two crabs</button>
             <button class="tablinks" onclick="openTab(event, 'egg_breed')" id="tab_2">How good is the egg?</button>
             <button class="tablinks" onclick="openTab(event, 'single_breed')" id="tab_3">Find the best match</button>
+            <button class="tablinks" onclick="openTab(event, 'look_dna')" id="tab_4">Look the DNA</button>
         </div>
         <div id="two_breed" class="tabcontent">
             <form id="crabs_settings" onsubmit="return false">
@@ -152,6 +153,13 @@
                 Max breed: &nbsp;&nbsp;<input type="number" id="maxbreed" step="1" style="width: 10em" /><br><br>
 
                 <button id="calculateBtn" class="button" onclick="calculate_single()">Calculate!</button>
+            </form>
+        </div>
+        <div id="look_dna" class="tabcontent">
+            <form id="dna_settings" onsubmit="return false">
+                Crab Id: &nbsp;&nbsp;<input type="number" id="crabid_single" step="1" style="width: 10em" /><br><br>
+
+                <button id="calculateBtn" class="button" onclick="calculate_dna()">Calculate!</button>
             </form>
         </div>
 
@@ -214,6 +222,16 @@
             calculate_two()
             return
         }
+
+        let crabid_single = document.getElementById("crabid_single");
+        let parametercrabid = GetURLParameter('crabid');
+        if (parametercrabid != null) {
+            document.getElementById("tab_4").click();
+            crabid_single.setAttribute("value", parametercrabid);
+            calculate_dna()
+            return
+        }
+        
 
         let singleid = document.getElementById("singleid");
         let maxprice = document.getElementById("maxprice");
@@ -454,6 +472,34 @@
             });
     }
 
+    function calculate_dna() {
+        clearForm()
+
+        let results = document.getElementById("results");
+        results.style.display = "block";
+
+        const crabid_single = document.getElementById("crabid_single").value;
+
+        fetch(`https://api.crabada.com/public/crabada/info/${crabid_single}`).then(response => response.json())
+            .then(function (response) {
+                const crab = response["result"];
+
+                const dnainfo = calcInfo(crab.dna)
+
+
+
+                const loading = document.getElementById("loading");
+                loading.innerHTML = "";
+
+                let resuls_text = document.getElementById("resuls_text");
+                resuls_text.innerHTML = ''
+                buildResultsSimplified(crab, dnainfo)
+
+            }).catch(function (error) {
+                console.log(error);
+            });
+    }
+
     function calculate_single() {
         clearForm()
 
@@ -602,6 +648,16 @@
             resuls_text.innerHTML += `<h5>Probability of 5/6 or higher: ${prob1.probability_5_6.toFixed(2)}%</h5>`
             resuls_text.innerHTML += `<h5>Probability of 6/6: ${prob1.probability_6_6.toFixed(2)}%</h5></br>`
         }
+    }
+
+    function buildResultsSimplified(crab1, dnainfo1) {
+        resuls_text.innerHTML += `<h4>DNA for Crab (${crab1.crabada_id} - ${crab1.class_name}):</h4>`
+        let table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
+        table += `<tr><td>Dominant class</td><td bgcolor="${mapColor(dnainfo1.shellr0)}">${dnainfo1.shellr0}</td><td bgcolor="${mapColor(dnainfo1.hornr0)}">${dnainfo1.hornr0}</td><td bgcolor="${mapColor(dnainfo1.bodyr0)}">${dnainfo1.bodyr0}</td><td bgcolor="${mapColor(dnainfo1.mouthr0)}">${dnainfo1.mouthr0}</td><td bgcolor="${mapColor(dnainfo1.eyer0)}">${dnainfo1.eyer0}</td><td bgcolor="${mapColor(dnainfo1.pincerr0)}">${dnainfo1.pincerr0}</td></tr>`
+        table += `<tr><td>Recessive 1 class</td><td bgcolor="${mapColor(dnainfo1.shellr1)}">${dnainfo1.shellr1}</td><td bgcolor="${mapColor(dnainfo1.hornr1)}">${dnainfo1.hornr1}</td><td bgcolor="${mapColor(dnainfo1.bodyr1)}">${dnainfo1.bodyr1}</td><td bgcolor="${mapColor(dnainfo1.mouthr1)}">${dnainfo1.mouthr1}</td><td bgcolor="${mapColor(dnainfo1.eyer1)}">${dnainfo1.eyer1}</td><td bgcolor="${mapColor(dnainfo1.pincerr1)}">${dnainfo1.pincerr1}</td></tr>`
+        table += `<tr><td>Recessive 2 class</td><td bgcolor="${mapColor(dnainfo1.shellr2)}">${dnainfo1.shellr2}</td><td bgcolor="${mapColor(dnainfo1.hornr2)}">${dnainfo1.hornr2}</td><td bgcolor="${mapColor(dnainfo1.bodyr2)}">${dnainfo1.bodyr2}</td><td bgcolor="${mapColor(dnainfo1.mouthr2)}">${dnainfo1.mouthr2}</td><td bgcolor="${mapColor(dnainfo1.eyer2)}">${dnainfo1.eyer2}</td><td bgcolor="${mapColor(dnainfo1.pincerr2)}">${dnainfo1.pincerr2}</td></tr>`
+        table += "</tbody></table></br>"
+        resuls_text.innerHTML += table
     }
 
     function clearForm() {
