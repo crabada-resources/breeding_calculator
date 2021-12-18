@@ -231,7 +231,7 @@
             calculate_dna()
             return
         }
-        
+
 
         let singleid = document.getElementById("singleid");
         let maxprice = document.getElementById("maxprice");
@@ -404,31 +404,58 @@
         const requests = []
         requests.push(fetch(`https://api.crabada.com/public/crabada/info/${crabid1}`).then(response => response.json()))
         requests.push(fetch(`https://api.crabada.com/public/crabada/info/${crabid2}`).then(response => response.json()))
-
+        requests.push(fetch(`https://api.crabada.com/public/crabada/family/${crabid1}`).then(response => response.json()))
+        requests.push(fetch(`https://api.crabada.com/public/crabada/family/${crabid2}`).then(response => response.json()))
         Promise.all(requests)
             .then(function (responses) {
-                console.log(responses)
                 const crab1 = responses[0]["result"];
                 const crab2 = responses[1]["result"];
+                const family1 = responses[2]["result"]
+                const parent_1_1 = family1['crabada_parents'] ? family1['crabada_parents'][0]["id"] : null
+                const parent_1_2 = family1['crabada_parents'] ? family1['crabada_parents'][1]["id"] : null
 
-                const dnainfo1 = calcInfo(crab1.dna)
-                const dnainfo2 = calcInfo(crab2.dna)
+                const family2 = responses[3]["result"]
+                const parent_2_1 = family2['crabada_parents'] ? family2['crabada_parents'][0]["id"] : null
+                const parent_2_2 = family2['crabada_parents'] ? family2['crabada_parents'][1]["id"] : null
 
+                let errorCode
+                if (parent_1_1 && parent_2_1 && (parent_1_1 == parent_2_1 || parent_1_1 == parent_2_2 || parent_1_2 == parent_2_1 || parent_1_2 == parent_2_2)) {
+                    errorCode = 1
+                }
+                else if ((parent_1_1 && (crab2.id == parent_1_1 || crab2.id == parent_1_2)) || (parent_2_1 && (crab1.id == parent_2_1 || crab1.id == parent_2_2))) {
+                    errorCode = 2
+                } else {
+                    errorCode = 0
+                }
+                let dnainfo1
+                let dnainfo2
                 let prob1
                 let prob2
+                if(errorCode== 0){
+                    dnainfo1 = calcInfo(crab1.dna)
+                    dnainfo2 = calcInfo(crab2.dna)
 
-                if (crab1.class_name != crab2.class_name) {
-                    prob1 = calcProbability(crab1.dna, crab2.dna, crab1.class_name)
-                    prob2 = calcProbability(crab1.dna, crab2.dna, crab2.class_name)
-                } else {
-                    prob1 = calcProbability(crab1.dna, crab2.dna, crab1.class_name)
+                    if (crab1.class_name != crab2.class_name) {
+                        prob1 = calcProbability(crab1.dna, crab2.dna, crab1.class_name)
+                        prob2 = calcProbability(crab1.dna, crab2.dna, crab2.class_name)
+                    } else {
+                        prob1 = calcProbability(crab1.dna, crab2.dna, crab1.class_name)
+                    }
                 }
+
                 const loading = document.getElementById("loading");
                 loading.innerHTML = "";
 
                 let resuls_text = document.getElementById("resuls_text");
                 resuls_text.innerHTML = ''
-                buildResults(crab1, crab2, dnainfo1, dnainfo2, prob1, prob2)
+
+
+                if(errorCode== 0){
+                    buildResults(crab1, crab2, dnainfo1, dnainfo2, prob1, prob2)
+                } else{
+                    errorBreed(errorCode)
+                }
+
 
             }).catch(function (error) {
                 console.log(error);
@@ -513,11 +540,16 @@
         const requests = []
         requests.push(fetch(`https://api.crabada.com/public/crabada/info/${singleid}`).then(response => response.json()))
         requests.push(fetch(`https://api.crabada.com/public/crabada/selling?limit=1000&stage=1&orderBy=price&order=asc`).then(response => response.json()))
+        requests.push(fetch(`https://api.crabada.com/public/crabada/family/${singleid}`).then(response => response.json()))
 
         Promise.all(requests)
             .then(function (responses) {
                 const crab1 = responses[0]["result"];
                 const dnainfo1 = calcInfo(crab1.dna)
+
+                const family1 = responses[2]["result"]
+                const parent_1_1 = family1['crabada_parents'] ? family1['crabada_parents'][0]["id"] : null
+                const parent_1_2 = family1['crabada_parents'] ? family1['crabada_parents'][1]["id"] : null
 
                 let bestprob6_6 = 0
                 let prob6
@@ -529,6 +561,9 @@
                 responses[1]["result"]["data"].forEach(c => {
                     let price = Math.round(c.price / 1.0e18)
                     if (c.breed_count > maxbreed || c.class_name != crab1.class_name || c.crabada_id == crab1.crabada_id || price > maxprice) {
+                        return
+                    }
+                    if (parent_1_1 && (c.crabada_id == parent_1_1 || c.crabada_id == parent_1_2)) {
                         return
                     }
                     let prob1 = calcProbability(crab1.dna, c.dna, crab1.class_name)
@@ -544,7 +579,6 @@
                         bestprob4_6 = prob1.probability_4_6
                         prob4 = { c, prob1 }
                     }
-
                 })
                 const loading = document.getElementById("loading");
                 loading.innerHTML = "";
@@ -595,6 +629,15 @@
             });
     }
 
+    function errorBreed(error) {
+        if(error == 1){
+            resuls_text.innerHTML += `<h4>Crabs share parents</h4>`
+        }
+        if(error == 2){
+            resuls_text.innerHTML += `<h4>Cannot breed parent and child</h4>`
+        }
+
+    }
     function buildResults(crab1, crab2, dnainfo1, dnainfo2, prob1, prob2) {
         resuls_text.innerHTML += `<h4>DNA for Crab 1 (${crab1.crabada_id} - ${crab1.class_name}):</h4>`
         let table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
