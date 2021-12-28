@@ -49,12 +49,15 @@
         padding: 10px;
     }
 
+    .hscroll {
+        overflow-x: auto;
+        /* Horizontal */
+    }
+
     table {
         border-collapse: collapse;
-        width: 50%;
         margin-left: auto;
         margin-right: auto;
-        table-layout: fixed;
     }
 
     td,
@@ -431,7 +434,7 @@
                 let dnainfo2
                 let prob1
                 let prob2
-                if(errorCode== 0){
+                if (errorCode == 0) {
                     dnainfo1 = calcInfo(crab1.dna)
                     dnainfo2 = calcInfo(crab2.dna)
 
@@ -450,9 +453,9 @@
                 resuls_text.innerHTML = ''
 
 
-                if(errorCode== 0){
+                if (errorCode == 0) {
                     buildResults(crab1, crab2, dnainfo1, dnainfo2, prob1, prob2)
-                } else{
+                } else {
                     errorBreed(errorCode)
                 }
 
@@ -630,10 +633,10 @@
     }
 
     function errorBreed(error) {
-        if(error == 1){
+        if (error == 1) {
             resuls_text.innerHTML += `<h4>Crabs share parents</h4>`
         }
-        if(error == 2){
+        if (error == 2) {
             resuls_text.innerHTML += `<h4>Cannot breed parent and child</h4>`
         }
 
