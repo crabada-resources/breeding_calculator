@@ -328,6 +328,77 @@
         }
     }
 
+    function lookup_subclass(id) {
+        subclass_map = {
+            1: "Emeraldo",
+            2: "Crazor",
+            3: "Vocrano",
+            4: "Spikey",
+            5: "Frozo",
+            6: "Cratos",
+            7: "Rubie",
+            8: "Amida",
+            16: "Staro",
+            17: "Craken",
+            18: "Crobster",
+            19: "Cralmon",
+            20: "Creasure",
+            21: "Crucket",
+            22: "Crele",
+            23: "Crotopus",
+            31: "Bitcoin",
+            32: "Cardano",
+            33: "Near",
+            34: "Ether",
+            35: "Cz",
+            36: "Fantom",
+            37: "Avalanche",
+            38: "Solana",
+            46: "Cragma",
+            47: "C-Rex",
+            48: "Charoite",
+            49: "Rocco",
+            50: "Chief",
+            51: "Cropion",
+            52: "Crazurite",
+            53: "Crava",
+            61: "Twinner",
+            62: "Onepunch",
+            63: "Cropter",
+            64: "Plasma",
+            65: "Lasery",
+            66: "Redeye",
+            67: "Crocket",
+            68: "Gear",
+            76: "Skul",
+            77: "Cragon",
+            78: "Crombie",
+            79: "Deadeye",
+            80: "Cranosis",
+            81: "Crailer",
+            82: "Camun-Ra",
+            83: "Crauldron",
+            91: "Pearlio",
+            92: "Lapidari",
+            93: "Paraiba",
+            94: "Cramethyst",
+            95: "Cranet",
+            96: "Croyo",
+            97: "Earl Cray",
+            98: "Magnifiso",
+            106: "Natura",
+            107: "Freshie",
+            108: "Adam",
+            109: "Eva",
+            110: "Bulbie",
+            111: "Celon",
+            112: "Cranana",
+            113: "Crawberry"
+        }
+
+        return subclass_map[id]
+    }
+
     const calcInfo = dna => {
         hexString = dec2hex(dna);
         dnafixed = `0${hexString}`
@@ -642,7 +713,10 @@
 
     }
     function buildResults(crab1, crab2, dnainfo1, dnainfo2, prob1, prob2) {
-        resuls_text.innerHTML += `<h4>DNA for Crab 1 (${crab1.crabada_id} - ${crab1.class_name}):</h4>`
+        const subclass_name1 = lookup_subclass(crab1.crabada_subclass)
+        const subclass_name2 = lookup_subclass(crab2.crabada_subclass)
+
+        resuls_text.innerHTML += `<h4>DNA for Crab 1 (${crab1.crabada_id} - ${crab1.class_name} - ${subclass_name1}):</h4>`
         let table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
         table += `<tr><td>Dominant class</td><td bgcolor="${mapColor(dnainfo1.shellr0)}">${dnainfo1.shellr0}</td><td bgcolor="${mapColor(dnainfo1.hornr0)}">${dnainfo1.hornr0}</td><td bgcolor="${mapColor(dnainfo1.bodyr0)}">${dnainfo1.bodyr0}</td><td bgcolor="${mapColor(dnainfo1.mouthr0)}">${dnainfo1.mouthr0}</td><td bgcolor="${mapColor(dnainfo1.eyer0)}">${dnainfo1.eyer0}</td><td bgcolor="${mapColor(dnainfo1.pincerr0)}">${dnainfo1.pincerr0}</td></tr>`
         table += `<tr><td>Recessive 1 class</td><td bgcolor="${mapColor(dnainfo1.shellr1)}">${dnainfo1.shellr1}</td><td bgcolor="${mapColor(dnainfo1.hornr1)}">${dnainfo1.hornr1}</td><td bgcolor="${mapColor(dnainfo1.bodyr1)}">${dnainfo1.bodyr1}</td><td bgcolor="${mapColor(dnainfo1.mouthr1)}">${dnainfo1.mouthr1}</td><td bgcolor="${mapColor(dnainfo1.eyer1)}">${dnainfo1.eyer1}</td><td bgcolor="${mapColor(dnainfo1.pincerr1)}">${dnainfo1.pincerr1}</td></tr>`
@@ -651,7 +725,7 @@
         resuls_text.innerHTML += table
 
 
-        resuls_text.innerHTML += `<h4>DNA for Crab 2 (${crab2.crabada_id} - ${crab2.class_name}):</h4>`
+        resuls_text.innerHTML += `<h4>DNA for Crab 2 (${crab2.crabada_id} - ${crab2.class_name} - ${subclass_name2}):</h4>`
         table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
         table += `<tr><td>Dominant class</td><td bgcolor="${mapColor(dnainfo2.shellr0)}">${dnainfo2.shellr0}</td><td bgcolor="${mapColor(dnainfo2.hornr0)}">${dnainfo2.hornr0}</td><td bgcolor="${mapColor(dnainfo2.bodyr0)}">${dnainfo2.bodyr0}</td><td bgcolor="${mapColor(dnainfo2.mouthr0)}">${dnainfo2.mouthr0}</td><td bgcolor="${mapColor(dnainfo2.eyer0)}">${dnainfo2.eyer0}</td><td bgcolor="${mapColor(dnainfo2.pincerr0)}">${dnainfo2.pincerr0}</td></tr>`
         table += `<tr><td>Recessive 1 class</td><td bgcolor="${mapColor(dnainfo2.shellr1)}">${dnainfo2.shellr1}</td><td bgcolor="${mapColor(dnainfo2.hornr1)}">${dnainfo2.hornr1}</td><td bgcolor="${mapColor(dnainfo2.bodyr1)}">${dnainfo2.bodyr1}</td><td bgcolor="${mapColor(dnainfo2.mouthr1)}">${dnainfo2.mouthr1}</td><td bgcolor="${mapColor(dnainfo2.eyer1)}">${dnainfo2.eyer1}</td><td bgcolor="${mapColor(dnainfo2.pincerr1)}">${dnainfo2.pincerr1}</td></tr>`
@@ -697,7 +771,9 @@
     }
 
     function buildResultsSimplified(crab1, dnainfo1) {
-        resuls_text.innerHTML += `<h4>DNA for Crab (${crab1.crabada_id} - ${crab1.class_name}):</h4>`
+        const subclass_name = lookup_subclass(crab1.crabada_subclass)
+
+        resuls_text.innerHTML += `<h4>DNA for Crab (${crab1.crabada_id} - ${crab1.class_name} - ${subclass_name}):</h4>`
         let table = '<table><thead><tr><th>Type</th><th>Shell</th><th>Horn</th><th>Body</th><th>Mouth</th><th>Eyes</th><th>Pincer</th></thead><tbody>'
         table += `<tr><td>Dominant class</td><td bgcolor="${mapColor(dnainfo1.shellr0)}">${dnainfo1.shellr0}</td><td bgcolor="${mapColor(dnainfo1.hornr0)}">${dnainfo1.hornr0}</td><td bgcolor="${mapColor(dnainfo1.bodyr0)}">${dnainfo1.bodyr0}</td><td bgcolor="${mapColor(dnainfo1.mouthr0)}">${dnainfo1.mouthr0}</td><td bgcolor="${mapColor(dnainfo1.eyer0)}">${dnainfo1.eyer0}</td><td bgcolor="${mapColor(dnainfo1.pincerr0)}">${dnainfo1.pincerr0}</td></tr>`
         table += `<tr><td>Recessive 1 class</td><td bgcolor="${mapColor(dnainfo1.shellr1)}">${dnainfo1.shellr1}</td><td bgcolor="${mapColor(dnainfo1.hornr1)}">${dnainfo1.hornr1}</td><td bgcolor="${mapColor(dnainfo1.bodyr1)}">${dnainfo1.bodyr1}</td><td bgcolor="${mapColor(dnainfo1.mouthr1)}">${dnainfo1.mouthr1}</td><td bgcolor="${mapColor(dnainfo1.eyer1)}">${dnainfo1.eyer1}</td><td bgcolor="${mapColor(dnainfo1.pincerr1)}">${dnainfo1.pincerr1}</td></tr>`
